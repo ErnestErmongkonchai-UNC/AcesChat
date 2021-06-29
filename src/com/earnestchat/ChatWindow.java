@@ -15,6 +15,7 @@ public class ChatWindow extends JFrame {
   private JTextArea history;
   private DefaultCaret caret;
 
+  private String name;
   private Socket chatSocket;
 
   private Thread receiveThread;
@@ -69,6 +70,9 @@ public class ChatWindow extends JFrame {
   }
 
   private void consolePrint(String message) {
+    if(message == null) {
+      throw new RuntimeException("Error: Null message error");
+    }
     history.append(message + "\n\r");
     history.setCaretPosition(history.getDocument().getLength());
   }
@@ -83,9 +87,10 @@ public class ChatWindow extends JFrame {
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
               String textMSG = txtMessage.getText();
               if(!textMSG.equals("")) {
+                textMSG = name + ": " + textMSG;
                 PrintWriter writer = new PrintWriter(output, true);
                 writer.println(textMSG);
-                consolePrint(">> " + textMSG);
+                consolePrint(textMSG);
                 txtMessage.setText("");
               }
             }
@@ -110,9 +115,10 @@ public class ChatWindow extends JFrame {
           public void actionPerformed(ActionEvent e) {
             String textMSG = txtMessage.getText();
             if(!textMSG.equals("")) {
+              textMSG = name + ": " + textMSG;
               PrintWriter writer = new PrintWriter(output, true);
               writer.println(textMSG);
-              consolePrint(">> " + textMSG);
+              consolePrint(textMSG);
               txtMessage.setText("");
             }
           }
@@ -127,16 +133,16 @@ public class ChatWindow extends JFrame {
   }
 
   private void closeWindow() {
-    System.out.println("disconnect " + chatSocket.getInetAddress().toString());
     running = false;
     try {
       chatSocket.close();
     } catch (IOException ioException) {
-      ioException.printStackTrace();
+      System.out.println("Successfully disconnected " + chatSocket.getInetAddress().toString());
     }
   }
 
-  public ChatWindow(Socket socket) {
+  public ChatWindow(String name, Socket socket) {
+    this.name = name;
     this.chatSocket = socket;
 
     createWindow();
@@ -156,21 +162,20 @@ public class ChatWindow extends JFrame {
                   closeWindow();
                   dispose();
                 } else {
-                  consolePrint("<< " + line);
+                  consolePrint(line);
                 }
               } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Error: Failed to create a receiving socket");
               }
             }
           }
         };
-
     receiveThread.start();
 
     try {
       sendMessage();
     } catch (IOException e) {
-      e.printStackTrace();
+      System.out.println("Error: Failed to send message");
     }
   }
 }

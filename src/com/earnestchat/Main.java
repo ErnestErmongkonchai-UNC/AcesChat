@@ -6,10 +6,13 @@ public class Main {
   public final static int CHATPORT = 54321;
 
   public static void main(String[] args) {
-    Listener listener = new Listener(CHATPORT);
+    Scanner scanner = new Scanner(System.in);
+    System.out.print("Enter your name: ");
+    String name = scanner.nextLine();
+
+    Listener listener = new Listener(name, CHATPORT);
     System.out.println("Server started on port " + CHATPORT);
 
-    Scanner scanner = new Scanner(System.in);
     while (true) {
       System.out.print("$ ");
       String text = scanner.nextLine();
@@ -18,10 +21,10 @@ public class Main {
         break;
       } else if (text.startsWith("connect ")) {
         String IPaddr = text.split("connect ")[1];
-        System.out.print("Enter name: ");
-        String name = scanner.nextLine();
         Initiator initiator = new Initiator(name, IPaddr, CHATPORT);
       }
     }
+
+    scanner.close();
   }
 }
